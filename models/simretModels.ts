@@ -25,6 +25,7 @@ export interface Goal {
   id: string;
   name: string;
   targetAmount: number;
+  savedAmount: number; // Amount saved so far
   startDate: string; // ISO date string
   endDate?: string; // Optional, for open-ended or time-bound goals
   categoryId?: string; // Optional, if the goal is for a specific category (e.g., savings)
