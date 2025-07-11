@@ -1,75 +1,140 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useSimret } from '@/context/SimretContext';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 export default function HomeScreen() {
+  const [showOverall, setShowOverall] = useState(false);
+  const router = useRouter();
+  const { incomeSources, expenses, goals } = useSimret();
+
+  const availableBalance = incomeSources.reduce((sum, src) => sum + src.amount, 0) - expenses.reduce((sum, e) => sum + e.amount, 0);
+  const totalSaved = goals.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
+  const overallBalance = availableBalance + totalSaved;
+
+  // Show up to 3 most recent expenses
+  const recentExpenses = [...expenses].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
+    <ThemedView style={{ flex: 1, padding: 20 }}>
+      {/* Balance Display */}
+      <View style={styles.balanceRow}>
+        <ThemedText type="title" style={{ fontSize: 28 }}>
+          {showOverall ? 'Overall Balance' : 'Available Balance'}:
         </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <Pressable onPress={() => setShowOverall(v => !v)} style={{ marginLeft: 10 }}>
+          <Ionicons name={showOverall ? 'eye-off' : 'eye'} size={28} color="#888" />
+        </Pressable>
+      </View>
+      <ThemedText type="title" style={{ fontSize: 32, marginBottom: 18 }}>
+        {showOverall ? overallBalance.toLocaleString() : availableBalance.toLocaleString()} ETB
+      </ThemedText>
+
+      {/* Goals Overview */}
+      <ThemedText type="subtitle" style={{ marginBottom: 8 }}>Goals Overview</ThemedText>
+      <FlatList
+        data={goals}
+        keyExtractor={item => item.id}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 18 }}
+        renderItem={({ item }) => {
+          const percent = Math.round(((item.savedAmount || 0) / item.targetAmount) * 100);
+          let color = '#6c8cff'; // Neutral
+          if (percent >= 70) color = '#2ecc40'; // Green
+          else if (percent >= 11) color = '#ffb300'; // Amber
+          return (
+            <View style={[styles.goalCard, { borderColor: color }]}> 
+              <View style={styles.circleWrap}>
+                <View style={[styles.circle, { borderColor: color }]}> 
+                  <ThemedText style={{ color, fontWeight: 'bold', fontSize: 18 }}>{percent}%</ThemedText>
+                </View>
+              </View>
+              <ThemedText type="defaultSemiBold" style={{ marginTop: 6 }}>{item.name}</ThemedText>
+              <ThemedText style={{ fontSize: 12, color: '#888' }}>{(item.savedAmount || 0).toLocaleString()} / {item.targetAmount.toLocaleString()} ETB</ThemedText>
+            </View>
+          );
+        }}
+        ListEmptyComponent={<ThemedText style={{ textAlign: 'center', marginTop: 16 }}>No goals yet.</ThemedText>}
+      />
+
+      {/* Recent Expenses */}
+      <ThemedText type="subtitle" style={{ marginBottom: 8 }}>Recent Expenses</ThemedText>
+      <FlatList
+        data={recentExpenses}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.expenseRow}>
+            <ThemedText style={{ flex: 2 }}>{item.description || 'Expense'}</ThemedText>
+            <ThemedText style={{ flex: 1, textAlign: 'right' }}>{item.amount.toLocaleString()} ETB</ThemedText>
+            <ThemedText style={{ flex: 1, textAlign: 'right', color: '#888' }}>{item.date}</ThemedText>
+          </View>
+        )}
+        ListEmptyComponent={<ThemedText style={{ textAlign: 'center', marginTop: 16 }}>No recent expenses.</ThemedText>}
+        style={{ marginBottom: 18 }}
+      />
+
+      {/* Quick Add Buttons */}
+      <View style={styles.quickAddRow}>
+        <Pressable style={[styles.quickAddBtn, { backgroundColor: '#6c8cff' }]} onPress={() => router.push('/(tabs)/goals')}>
+          <ThemedText style={{ color: '#fff' }}>+ Add to Goal</ThemedText>
+        </Pressable>
+        <Pressable style={[styles.quickAddBtn, { backgroundColor: '#ff5a36' }]} onPress={() => router.push('/(tabs)/expenses')}>
+          <ThemedText style={{ color: '#fff' }}>+ Add Expense</ThemedText>
+        </Pressable>
+      </View>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  balanceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    marginBottom: 4,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  goalCard: {
+    borderWidth: 2,
+    borderRadius: 16,
+    padding: 16,
+    marginRight: 14,
+    alignItems: 'center',
+    minWidth: 140,
+    backgroundColor: '#f8faff',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  circleWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  circle: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    borderWidth: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  expenseRow: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  quickAddRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    gap: 12,
+  },
+  quickAddBtn: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
   },
 });
