@@ -1,23 +1,56 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+
+function ScrollableTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  return (
+    <View style={{ flexDirection: 'row', backgroundColor: '#fff', elevation: 8 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label = options.title ?? route.name;
+          const isFocused = state.index === index;
+          return (
+            <TouchableOpacity
+              key={route.key}
+              onPress={() => navigation.navigate(route.name)}
+              style={{
+                paddingHorizontal: 18,
+                paddingVertical: 10,
+                borderBottomWidth: isFocused ? 3 : 0,
+                borderBottomColor: isFocused ? '#6c8cff' : 'transparent',
+                alignItems: 'center',
+              }}
+            >
+              {options.tabBarIcon
+                ? options.tabBarIcon({ color: isFocused ? '#6c8cff' : '#888', focused: isFocused, size: 28 })
+                : null}
+              <Text style={{ color: isFocused ? '#6c8cff' : '#888', fontWeight: isFocused ? 'bold' : 'normal', fontSize: 13 }}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
     <Tabs
+      tabBar={props => <ScrollableTabBar {...props} />}
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         tabBarInactiveTintColor: '#b0b0b0',
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
         tabBarStyle: {
           borderTopLeftRadius: 18,
           borderTopRightRadius: 18,
