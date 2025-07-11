@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { IncomeSource } from '@/models/simretModels';
+import { useSimret } from '@/context/SimretContext';
 import React, { useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
@@ -9,7 +9,7 @@ function generateId() {
 }
 
 export default function IncomeScreen() {
-  const [incomeSources, setIncomeSources] = useState<IncomeSource[]>([]);
+  const { incomeSources, setIncomeSources } = useSimret();
   const [modalVisible, setModalVisible] = useState(false);
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
