@@ -101,7 +101,7 @@ export default function BudgetScreen() {
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <ThemedText type="title" style={{ marginBottom: 12 }}>{editId ? 'Edit' : 'Add'} Budget</ThemedText>
+            <ThemedText type="title" style={{ marginBottom: 12, color: '#222' }}>{editId ? 'Edit' : 'Add'} Budget</ThemedText>
             <View style={styles.pickerRow}>
               <ThemedText style={{ marginRight: 8 }}>Category:</ThemedText>
               <View style={{ flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 6, overflow: 'hidden' }}>
@@ -119,6 +119,7 @@ export default function BudgetScreen() {
             </View>
             <TextInput
               placeholder="Budget Amount"
+              placeholderTextColor="#666"
               value={amount}
               onChangeText={setAmount}
               keyboardType="numeric"

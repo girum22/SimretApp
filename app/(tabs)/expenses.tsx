@@ -64,15 +64,17 @@ export default function ExpenseScreen() {
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <ThemedText type="title" style={{ marginBottom: 12 }}>Add Expense</ThemedText>
+            <ThemedText type="title" style={{ marginBottom: 12, color: '#222' }}>Add Expense</ThemedText>
             <TextInput
               placeholder="Description"
+              placeholderTextColor="#666"
               value={description}
               onChangeText={setDescription}
               style={styles.input}
             />
             <TextInput
               placeholder="Amount"
+              placeholderTextColor="#666"
               value={amount}
               onChangeText={setAmount}
               keyboardType="numeric"

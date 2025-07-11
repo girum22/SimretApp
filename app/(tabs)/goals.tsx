@@ -109,15 +109,17 @@ export default function GoalScreen() {
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <ThemedText type="title" style={{ marginBottom: 12 }}>{editId ? 'Edit' : 'Add'} Goal</ThemedText>
+            <ThemedText type="title" style={{ marginBottom: 12, color: '#222' }}>{editId ? 'Edit' : 'Add'} Goal</ThemedText>
             <TextInput
               placeholder="Goal Name"
+              placeholderTextColor="#666"
               value={name}
               onChangeText={setName}
               style={styles.input}
             />
             <TextInput
               placeholder="Target Amount"
+              placeholderTextColor="#666"
               value={targetAmount}
               onChangeText={setTargetAmount}
               keyboardType="numeric"
@@ -137,6 +139,7 @@ export default function GoalScreen() {
             </View>
             <TextInput
               placeholder="Deadline (YYYY-MM-DD)"
+              placeholderTextColor="#666"
               value={endDate}
               onChangeText={setEndDate}
               style={styles.input}
@@ -156,9 +159,10 @@ export default function GoalScreen() {
       <Modal visible={contribModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <ThemedText type="title" style={{ marginBottom: 12 }}>Add to Goal</ThemedText>
+            <ThemedText type="title" style={{ marginBottom: 12, color: '#222' }}>Add to Goal</ThemedText>
             <TextInput
               placeholder="Amount to Add"
+              placeholderTextColor="#666"
               value={contribution}
               onChangeText={setContribution}
               keyboardType="numeric"

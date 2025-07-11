@@ -60,15 +60,17 @@ export default function IncomeScreen() {
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <ThemedText type="title" style={{ marginBottom: 12 }}>Add Income Source</ThemedText>
+            <ThemedText type="title" style={{ marginBottom: 12, color: '#222' }}>Add Income Source</ThemedText>
             <TextInput
               placeholder="Source Name"
+              placeholderTextColor="#666"
               value={name}
               onChangeText={setName}
               style={styles.input}
             />
             <TextInput
               placeholder="Amount"
+              placeholderTextColor="#666"
               value={amount}
               onChangeText={setAmount}
               keyboardType="numeric"

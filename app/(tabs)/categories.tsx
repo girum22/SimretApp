@@ -79,9 +79,10 @@ export default function CategoryScreen() {
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <ThemedText type="title" style={{ marginBottom: 12 }}>{editId ? 'Edit' : 'Add'} Category</ThemedText>
+            <ThemedText type="title" style={{ marginBottom: 12, color: '#222' }}>{editId ? 'Edit' : 'Add'} Category</ThemedText>
             <TextInput
               placeholder="Category Name"
+              placeholderTextColor="#666"
               value={name}
               onChangeText={setName}
               style={styles.input}
