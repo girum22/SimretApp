@@ -30,15 +30,15 @@ export default function ReportScreen() {
       <ThemedText type="title" style={{ marginBottom: 16 }}>Reports & Analytics</ThemedText>
       <View style={styles.summaryRow}>
         <View style={styles.summaryCard}>
-          <ThemedText type="defaultSemiBold">Total Income</ThemedText>
+          <ThemedText type="defaultSemiBold" style={{ color: '#888' }}>Total Income</ThemedText>
           <ThemedText type="title" style={{ color: '#2ecc40' }}>{totalIncome.toLocaleString()} ETB</ThemedText>
         </View>
         <View style={styles.summaryCard}>
-          <ThemedText type="defaultSemiBold">Total Expenses</ThemedText>
+          <ThemedText type="defaultSemiBold" style={{ color: '#888' }}>Total Expenses</ThemedText>
           <ThemedText type="title" style={{ color: '#ff5a36' }}>{totalExpenses.toLocaleString()} ETB</ThemedText>
         </View>
         <View style={styles.summaryCard}>
-          <ThemedText type="defaultSemiBold">Total Saved</ThemedText>
+          <ThemedText type="defaultSemiBold" style={{ color: '#888' }}>Total Saved</ThemedText>
           <ThemedText type="title" style={{ color: '#6c8cff' }}>{totalSaved.toLocaleString()} ETB</ThemedText>
         </View>
       </View>
