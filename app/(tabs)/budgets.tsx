@@ -1,9 +1,26 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useSimret } from '@/context/SimretContext';
+import { Budget } from '@/models/simretModels';
 import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
+
+// Helper to get the start of the current week (Monday)
+function getStartOfWeek(date: Date): Date {
+  const day = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday (0) to become previous Monday
+  const startOfWeek = new Date(date.getFullYear(), date.getMonth(), diff);
+  startOfWeek.setHours(0, 0, 0, 0); // Set to start of the day
+  return startOfWeek;
+}
+
+// Helper to get the start of the current month
+function getStartOfMonth(date: Date): Date {
+  const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+  startOfMonth.setHours(0, 0, 0, 0); // Set to start of the day
+  return startOfMonth;
+}
 
 function generateId() {
   return Math.random().toString(36).substring(2, 10);
@@ -15,7 +32,7 @@ export default function BudgetScreen() {
   const [editId, setEditId] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState(categories[0]?.id || '');
-  const [period, setPeriod] = useState<'monthly' | 'weekly' | 'yearly'>('monthly');
+  const [period, setPeriod] = useState<'monthly' | 'weekly'>('monthly'); // 'yearly' removed here
 
   const openAdd = () => {
     setEditId(null);
@@ -30,7 +47,8 @@ export default function BudgetScreen() {
       setEditId(id);
       setAmount(b.amount.toString());
       setCategoryId(b.categoryId);
-      setPeriod(b.period);
+      // Ensure 'yearly' is not selected if it was somehow stored
+      setPeriod(b.period === 'yearly' ? 'monthly' : b.period); 
       setModalVisible(true);
     }
   };
@@ -51,8 +69,27 @@ export default function BudgetScreen() {
     setBudgets(budgets.filter(b => b.id !== id));
   };
 
-  // Helper: get spent for a category
-  const getSpent = (catId: string) => expenses.filter(e => e.categoryId === catId).reduce((sum, e) => sum + e.amount, 0);
+  // Helper: get spent for a category within its current period
+  const getSpent = (budget: Budget) => {
+    const now = new Date();
+    let periodStartDate: Date;
+
+    if (budget.period === 'weekly') {
+      // For weekly, calculate expenses within the current week
+      periodStartDate = getStartOfWeek(now);
+    } else { // 'monthly'
+      // For monthly, calculate expenses within the current month
+      periodStartDate = getStartOfMonth(now);
+    }
+    
+    // Filter expenses that belong to the budget's category and fall within the current budget period
+    const relevantExpenses = expenses.filter(e => {
+        const expenseDate = new Date(e.date);
+        return e.categoryId === budget.categoryId && expenseDate >= periodStartDate && expenseDate <= now;
+    });
+
+    return relevantExpenses.reduce((sum, e) => sum + e.amount, 0);
+  };
 
   return (
     <ThemedView style={{ flex: 1, padding: 20 }}>
@@ -61,8 +98,13 @@ export default function BudgetScreen() {
         data={budgets}
         keyExtractor={item => item.id}
         renderItem={({ item }) => {
+          // Filter out yearly budgets from display (if any somehow exist)
+          if (item.period === 'yearly') {
+            return null; 
+          }
+
           const cat = categories.find(c => c.id === item.categoryId);
-          const spent = getSpent(item.categoryId);
+          const spent = getSpent(item); // Pass the whole budget item
           const remaining = item.amount - spent;
           let color = '#6c8cff';
           if (remaining < 0) color = '#ff5a36'; // Over budget
@@ -71,7 +113,7 @@ export default function BudgetScreen() {
           return (
             <View style={styles.row}>
               <ThemedText style={{ flex: 1 }}>{cat?.name || 'Category'}</ThemedText>
-              <ThemedText style={{ flex: 1 }}>{item.amount.toLocaleString()} ETB</ThemedText>
+              <ThemedText style={{ flex: 1 }}>{item.amount.toLocaleString()} ETB ({item.period === 'weekly' ? 'Weekly' : 'Monthly'})</ThemedText>
               <ThemedText style={{ flex: 1, color }}>{spent.toLocaleString()} ETB</ThemedText>
               <ThemedText style={{ flex: 1, color }}>{remaining.toLocaleString()} ETB</ThemedText>
               <Pressable onPress={() => openEdit(item.id)} style={styles.editBtn}>
@@ -130,13 +172,13 @@ export default function BudgetScreen() {
               <View style={{ flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 6, overflow: 'hidden' }}>
                 <Picker
                   selectedValue={period}
-                  onValueChange={itemValue => setPeriod(itemValue as 'monthly' | 'weekly' | 'yearly')}
+                  onValueChange={itemValue => setPeriod(itemValue as 'monthly' | 'weekly')} // Removed 'yearly'
                   style={{ width: '100%' }}
                   dropdownIconColor="#007AFF"
                 >
                   <Picker.Item label="Monthly" value="monthly" />
                   <Picker.Item label="Weekly" value="weekly" />
-                  <Picker.Item label="Yearly" value="yearly" />
+                  {/* <Picker.Item label="Yearly" value="yearly" /> // Removed */}
                 </Picker>
               </View>
             </View>
